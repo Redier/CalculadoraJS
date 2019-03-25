@@ -3,25 +3,20 @@
 // creamos el objeto calculadora
 var calculadora={
   numero1:'0',
-  numero2:'0',
-  punto1:false,
-  punto2:false,
   resultado:0,
   operador:'',
-  signo:1,
   teclas:['0','1','2','3','4','5','6','7','8','9','punto','igual','mas','menos','por','dividido','raiz','sign','on'],
   inicializarValores: function(){
     this.numero1='0';
-    this.numero2='0';
-    this.punto1=false;
-    this.punto2=false;
+    this.display='0';
     this.resultado=0;
     this.operador='';
+    this.signo=1;
   },
-  operacionAritmetica: function(num1,num2, operador){
+  operacionAritmetica: function(num1, num2, operador){
     var result=0
-    var variable1= parseFloat(num1)
-    var variable2= parseFloat(num2)
+        variable1 =num1
+        variable2 =num2
 
   switch (operador) {
     case 'mas':
@@ -37,13 +32,9 @@ var calculadora={
       result= variable1/variable2;
       break;
     default:
-
   }
-  if (result.toString().length>8){
-    result=result.toFixed(7)
-  }
+  console.log(result.toString());
   return result;
-
   },
   //al presionar tecla reducir tamano de la teclado e imprimir en pantalla
   presionar_tecla: function(){
@@ -53,16 +44,16 @@ var calculadora={
   },
   cambiar_tecla: function (event){
     var idTecla=event.currentTarget.id;
-    var imgSuma =document.getElementById(idTecla);
+    var imgTecla =document.getElementById(idTecla);
     if (idTecla=='mas') {
-    imgSuma.style='width : 74px; height:134px';
+    imgTecla.style='width : 74px; height:134px';
     setInterval(function() {
-    imgSuma.style='width : 79px; height:138px';
+    imgTecla.style='width : 79px; height:138px';
     }, 200);
   } else {
-      imgSuma.style='width : 70px; height:61px';
+      imgTecla.style='width : 70px; height:61px';
       setInterval(function() {
-      imgSuma.style='width : 75px; height:62.91px';
+      imgTecla.style='width : 75px; height:62.91px';
     }, 200);
     }
     //llamar a la funcion que segun sea el boton presionado ejecute una function
@@ -71,24 +62,13 @@ var calculadora={
   },
   //-------
   ejecutarFuncion:function(tecla){
+    var numero =Number(this.numero1);
+        resultado =this.resultado;
+        operador=calculadora.operador;
 
     switch (tecla) {
       case 'punto':
-        if (this.operador==''){//primer numero
-          //validamos q no tengan puntos
-          if (!this.punto1) {
-            this.numero1+='.';
-            this.imprimirPantalla(this.numero1);
-            this.punto1=true;
-          }
-        }else {
-          //validamos q no tengan puntos
-          if (!this.punto2) {
-            this.numero2+='.';
-            this.imprimirPantalla(this.numero2);
-            this.punto2=true;
-          }
-        };
+        calculadora.insertarPunto(tecla);
         break;
       case '0':
       case '1':
@@ -100,26 +80,10 @@ var calculadora={
       case '7':
       case '8':
       case '9':
-        if (this.operador==''){
-          if (this.numero1.length<9){
-            if (  this.numero1=='0') {
-              this.numero1='';
-            }
-            this.numero1+=tecla;
-            this.imprimirPantalla(this.numero1);
-          }
-        }else{//trabajamos con el segundo numero
-          if (this.numero2.length<9){
-            if ( this.numero2=='0') {
-              this.numero2='';
-            }
-            this.numero2+=tecla;
-            this.imprimirPantalla(this.numero2);
-          }
-        };
+        calculadora.insertarNumero(tecla);
         break;
       case 'on':
-        this.limpiarPantalla('0');
+        this.imprimirPantalla('0');
         //limpiar numeros y operador
         calculadora.inicializarValores();
         break;
@@ -127,30 +91,71 @@ var calculadora={
       case 'menos':
       case 'por':
       case 'dividido':
-        this.operador=tecla,
-        this.limpiarPantalla('');
+        this.operador=tecla;
+        this.resultado+=numero;
+        this.numero1='0';
+        this.imprimirPantalla('');
         break;
       case 'igual':
-        this.resultado=calculadora.operacionAritmetica(this.numero1,this.numero2,this.operador);
-        this.imprimirPantalla(this.resultado.toString());
+        calculadora.ejecutarIgual()
         break;
       case 'sign':
-        calculadora.asignarSimbolo();
+          calculadora.insertarSigno(tecla);
         break;
       default:
 
     }
   },
-
-  //----------
-  imprimirPantalla:function(tecla){
-
-     document.getElementById('display').innerHTML=tecla;
-  },
+//--------------
+insertarPunto:function(tecla){
+  var cadena = calculadora.numero1;
+  var index=cadena.indexOf('.');
+  if (index ==-1){// no hay punto insertamos el punto
+    calculadora.numero1+='.';
+  }
+  calculadora.imprimirPantalla(this.numero1);
+},
 //---------------
-  limpiarPantalla: function(vari){
-    document.getElementById('display').innerHTML=vari;
+insertarNumero:function(tecla){
+  var numero =calculadora.numero1;
+  if (numero.length <8){
+    if (  numero=='0') {
+                numero='';
+    }
+    numero+=tecla;
+
+  }
+  calculadora.numero1=numero;
+  calculadora.imprimirPantalla(numero);
+},
+//----------------------
+insertarSigno:function(tecla)
+{
+  var numero= Number(calculadora.numero1);
+  numero*=-1;
+  calculadora.numero1=numero.toString();
+  calculadora.imprimirPantalla(calculadora.numero1);
+},
+//----------------
+ejecutarIgual:function(){
+  var numero =Number(this.numero1);
+      resultado =this.resultado;
+      operador=this.operador;
+  this.resultado=calculadora.operacionAritmetica(resultado,numero,operador);
+  this.imprimirPantalla(this.resultado.toString());
+  this.numero1='0';
+},
+  //----------
+  imprimirPantalla:function(cadena){
+    //validar que tamaño de cadena a mostrar sea tamaño 8.
+    var size =cadena.length;
+    if (size>8) {
+      document.getElementById('display').innerHTML=cadena.substr(0,9);
+    }else{
+     document.getElementById('display').innerHTML=cadena;
+   }
   },
+
   asignarSimbolo:function(){
     var num1=parseFloat(calculadora.numero1);
     var num2=parseFloat(calculadora.numero2);
